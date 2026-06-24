@@ -298,7 +298,6 @@
         
         let currentOwnerName = "";
         let selectedRandomMonth = ""; 
-        // Global variable to keep track of the selected random tracking prefix
         let selectedTrackingPrefix = "TRK-"; 
 
         function toggleMobileSidebar() {
@@ -313,11 +312,11 @@
         }
 
         function seedDataEngine() {
+            // Dashboard random owners list including Ayesha
             const dashboardOwners = [
-                "Kasun", "Ruwan", "Nimal", "Tharindu", "Sahan", 
+                "Ayesha", "Kasun", "Ruwan", "Nimal", "Tharindu", "Sahan", 
                 "Chamara", "Dinesh", "Asanka", "Roshan", "Nuwan", 
-                "Pathum", "Duminda", "Chathura", "Kusal", "Isuru", 
-                "Pradeep", "Malith", "Janaka", "Sameera", "Lahiru"
+                "Pathum", "Duminda", "Chathura", "Kusal", "Isuru"
             ];
             currentOwnerName = dashboardOwners[Math.floor(Math.random() * dashboardOwners.length)];
             document.getElementById("header-title").innerText = `${currentOwnerName}'s userdashboard`;
@@ -325,22 +324,18 @@
             const targetedMonths = ["05", "06"];
             selectedRandomMonth = targetedMonths[Math.floor(Math.random() * targetedMonths.length)];
 
-            // 1. Random Tracking Prefix setup
+            // Tracking ID prefix array
             const trackingPrefixes = ["TRK-", "EX-", "LOG-", "COD-", "DLV-"];
             selectedTrackingPrefix = trackingPrefixes[Math.floor(Math.random() * trackingPrefixes.length)];
 
             const cities = ["Colombo", "Kandy", "Galle", "Jaffna", "Negombo", "Gampaha", "Kurunegala", "Matara", "Kalutara", "Ratnapura"];
             const names = ["Anura Silva", "Priyantha Perera", "Kamal Fernando", "Nimal Jayawardena", "Suresh Kumar", "Nisha Cooray", "Sunil Shantha", "Ruwan Bandara", "Malkanthi Alwis", "Thilina De Silva"];
-            const roundAmounts = [2650, 2700, 2750, 2800, 2850, 2900, 2950, 3000];
+            const roundAmounts = [2800, 2850, 2900, 2950];
 
-            let randomTargetRevenue = Math.floor(Math.random() * (2000000 - 50000 + 1)) + 50000;
-            let averageItemPrice = 2850;
-            let targetDelivered = Math.round(randomTargetRevenue / averageItemPrice);
-            if (targetDelivered < 1) targetDelivered = 1; 
-            
-            let targetPending = Math.floor(Math.random() * (25 - 5 + 1)) + 5; 
-            let total = targetDelivered + targetPending;
-            let targetCod = Math.round(total * 0.65); 
+            // Generating random record counts to keep it unique on refresh
+            let total = Math.floor(Math.random() * (350 - 280 + 1)) + 280; 
+            let targetDelivered = Math.floor(total * 0.96); 
+            let targetCod = Math.floor(total * 0.67); 
 
             let statuses = Array(total).fill("Pending");
             for(let i = 0; i < targetDelivered; i++) statuses[i] = "Delivered";
@@ -350,7 +345,7 @@
 
             let dates = [];
             for (let i = 0; i < total; i++) {
-                let day = String(Math.floor(Math.random() * 24) + 1).padStart(2, '0');
+                let day = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
                 dates.push(`2026-${selectedRandomMonth}-${day}`);
             }
 
@@ -358,7 +353,6 @@
             for (let i = 0; i < total; i++) {
                 let amount = roundAmounts[Math.floor(Math.random() * roundAmounts.length)];
                 masterData.push({
-                    // Tracking ID created with the selected random prefix
                     id: selectedTrackingPrefix + (4000 + i),
                     date: dates[i],
                     name: names[Math.floor(Math.random() * names.length)],
@@ -395,7 +389,7 @@
             if(document.getElementById("filtered-count")) document.getElementById("filtered-count").innerText = `${filteredData.length} / ${masterData.length}`;
 
             if(document.getElementById("stat-withdrawals-total")) {
-                let dynamicPaidOut = Math.round(totalRevenue * 0.75);
+                let dynamicPaidOut = Math.round(totalRevenue * 0.95);
                 document.getElementById("stat-withdrawals-total").innerText = `LKR ${dynamicPaidOut.toLocaleString()}`;
             }
 
@@ -490,7 +484,6 @@
             
             let today = new Date();
             let dateStr = today.toISOString().split('T')[0];
-            // Uses the active randomized tracking prefix for manually created items
             let nextId = selectedTrackingPrefix + (4000 + masterData.length);
             
             masterData.push({
@@ -515,9 +508,9 @@
 
             let mString = selectedRandomMonth === "05" ? "05" : "06";
             const withdrawalsList = [
-                { id: "WTH-9081", date: `2026-${mString}-20`, bank: "BOC - Acc *8821", amount: 45000 },
-                { id: "WTH-9082", date: `2026-${mString}-15`, bank: "Commercial Bank - Acc *4401", amount: 38000 },
-                { id: "WTH-9083", date: `2026-${mString}-01`, bank: "Sampath Bank - Acc *0194", amount: 8000 }
+                { id: "WTH-9081", date: `2026-${mString}-20`, bank: "BOC - Acc *8821", amount: 450000 },
+                { id: "WTH-9082", date: `2026-${mString}-15`, bank: "Commercial Bank - Acc *4401", amount: 380000 },
+                { id: "WTH-9083", date: `2026-${mString}-01`, bank: "Sampath Bank - Acc *0194", amount: 80000 }
             ];
             withdrawalBody.innerHTML = "";
             withdrawalsList.forEach(w => {
