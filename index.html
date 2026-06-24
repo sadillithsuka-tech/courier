@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ayesha's Userdashboard</title>
+    <title>Courier Userdashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -55,8 +55,8 @@
                         <i class="fa-solid fa-bars text-xl"></i>
                     </button>
                     <div>
-                        <h2 class="text-lg md:text-xl font-semibold text-gray-800" id="header-title">Ayesha's userdashboard</h2>
-                        <p class="text-[10px] md:text-xs text-gray-400">Database Engine: <span class="font-bold text-gray-600" id="db-total-records">325 Records Synchronized</span></p>
+                        <h2 class="text-lg md:text-xl font-semibold text-gray-800" id="header-title">Userdashboard</h2>
+                        <p class="text-[10px] md:text-xs text-gray-400">Database Engine: <span class="font-bold text-gray-600" id="db-total-records">0 Records Synchronized</span></p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-2 md:space-x-4">
@@ -175,7 +175,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
                     <div class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-gray-100">
                         <p class="text-xs md:text-sm font-medium text-gray-500">Total Paid Out</p>
-                        <h3 class="text-xl md:text-2xl font-bold text-indigo-600 mt-1">LKR 4,120,000</h3>
+                        <h3 class="text-xl md:text-2xl font-bold text-indigo-600 mt-1" id="stat-withdrawals-total">LKR 0</h3>
                     </div>
                     <div class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-gray-100">
                         <p class="text-xs md:text-sm font-medium text-gray-500">Pending Approvals</p>
@@ -294,7 +294,12 @@
         let masterData = [];
         let filteredData = [];
         let currentPage = 1;
-        const rowsPerPage = 50; 
+        const rowsPerPage = 50;
+        
+        let currentOwnerName = "";
+        let selectedRandomMonth = ""; 
+        // Global variable to keep track of the selected random tracking prefix
+        let selectedTrackingPrefix = "TRK-"; 
 
         function toggleMobileSidebar() {
             const sidebar = document.getElementById("sidebar-menu");
@@ -308,32 +313,53 @@
         }
 
         function seedDataEngine() {
+            const dashboardOwners = [
+                "Kasun", "Ruwan", "Nimal", "Tharindu", "Sahan", 
+                "Chamara", "Dinesh", "Asanka", "Roshan", "Nuwan", 
+                "Pathum", "Duminda", "Chathura", "Kusal", "Isuru", 
+                "Pradeep", "Malith", "Janaka", "Sameera", "Lahiru"
+            ];
+            currentOwnerName = dashboardOwners[Math.floor(Math.random() * dashboardOwners.length)];
+            document.getElementById("header-title").innerText = `${currentOwnerName}'s userdashboard`;
+
+            const targetedMonths = ["05", "06"];
+            selectedRandomMonth = targetedMonths[Math.floor(Math.random() * targetedMonths.length)];
+
+            // 1. Random Tracking Prefix setup
+            const trackingPrefixes = ["TRK-", "EX-", "LOG-", "COD-", "DLV-"];
+            selectedTrackingPrefix = trackingPrefixes[Math.floor(Math.random() * trackingPrefixes.length)];
+
             const cities = ["Colombo", "Kandy", "Galle", "Jaffna", "Negombo", "Gampaha", "Kurunegala", "Matara", "Kalutara", "Ratnapura"];
             const names = ["Anura Silva", "Priyantha Perera", "Kamal Fernando", "Nimal Jayawardena", "Suresh Kumar", "Nisha Cooray", "Sunil Shantha", "Ruwan Bandara", "Malkanthi Alwis", "Thilina De Silva"];
-            // Specific localized base amount to consistently balance around 9 Lakhs
-            const roundAmounts = [2850, 2900, 2800, 2950];
+            const roundAmounts = [2650, 2700, 2750, 2800, 2850, 2900, 2950, 3000];
 
-            let total = 325; 
-            let targetDelivered = 314; 
-            let targetCod = 218; 
+            let randomTargetRevenue = Math.floor(Math.random() * (2000000 - 50000 + 1)) + 50000;
+            let averageItemPrice = 2850;
+            let targetDelivered = Math.round(randomTargetRevenue / averageItemPrice);
+            if (targetDelivered < 1) targetDelivered = 1; 
+            
+            let targetPending = Math.floor(Math.random() * (25 - 5 + 1)) + 5; 
+            let total = targetDelivered + targetPending;
+            let targetCod = Math.round(total * 0.65); 
 
             let statuses = Array(total).fill("Pending");
-            for(let i=0; i<targetDelivered; i++) statuses[i] = "Delivered";
+            for(let i = 0; i < targetDelivered; i++) statuses[i] = "Delivered";
 
             let types = Array(total).fill("Prepaid");
-            for(let i=0; i<targetCod; i++) types[i] = "COD";
+            for(let i = 0; i < targetCod; i++) types[i] = "COD";
 
             let dates = [];
             for (let i = 0; i < total; i++) {
-                let day = String(Math.floor(Math.random() * 31) + 1).padStart(2, '0');
-                dates.push(`2026-05-${day}`);
+                let day = String(Math.floor(Math.random() * 24) + 1).padStart(2, '0');
+                dates.push(`2026-${selectedRandomMonth}-${day}`);
             }
 
             masterData = [];
             for (let i = 0; i < total; i++) {
                 let amount = roundAmounts[Math.floor(Math.random() * roundAmounts.length)];
                 masterData.push({
-                    id: "TRK-" + (4000 + i),
+                    // Tracking ID created with the selected random prefix
+                    id: selectedTrackingPrefix + (4000 + i),
                     date: dates[i],
                     name: names[Math.floor(Math.random() * names.length)],
                     address: cities[Math.floor(Math.random() * cities.length)],
@@ -367,6 +393,11 @@
             if(document.getElementById("stat-delivered")) document.getElementById("stat-delivered").innerText = deliveredCount;
             if(document.getElementById("stat-pending")) document.getElementById("stat-pending").innerText = pendingCount;
             if(document.getElementById("filtered-count")) document.getElementById("filtered-count").innerText = `${filteredData.length} / ${masterData.length}`;
+
+            if(document.getElementById("stat-withdrawals-total")) {
+                let dynamicPaidOut = Math.round(totalRevenue * 0.75);
+                document.getElementById("stat-withdrawals-total").innerText = `LKR ${dynamicPaidOut.toLocaleString()}`;
+            }
 
             const tableBody = document.getElementById("parcel-table-body");
             if(!tableBody) return;
@@ -459,7 +490,8 @@
             
             let today = new Date();
             let dateStr = today.toISOString().split('T')[0];
-            let nextId = "TRK-" + (4000 + masterData.length);
+            // Uses the active randomized tracking prefix for manually created items
+            let nextId = selectedTrackingPrefix + (4000 + masterData.length);
             
             masterData.push({
                 id: nextId,
@@ -480,10 +512,12 @@
         function renderWithdrawals() {
             const withdrawalBody = document.getElementById("withdrawal-table-body");
             if (!withdrawalBody) return;
+
+            let mString = selectedRandomMonth === "05" ? "05" : "06";
             const withdrawalsList = [
-                { id: "WTH-9081", date: "2026-05-20", bank: "BOC - Acc *8821", amount: 450000 },
-                { id: "WTH-9082", date: "2026-05-15", bank: "Commercial Bank - Acc *4401", amount: 380000 },
-                { id: "WTH-9083", date: "2026-05-01", bank: "Sampath Bank - Acc *0194", amount: 80000 }
+                { id: "WTH-9081", date: `2026-${mString}-20`, bank: "BOC - Acc *8821", amount: 45000 },
+                { id: "WTH-9082", date: `2026-${mString}-15`, bank: "Commercial Bank - Acc *4401", amount: 38000 },
+                { id: "WTH-9083", date: `2026-${mString}-01`, bank: "Sampath Bank - Acc *0194", amount: 8000 }
             ];
             withdrawalBody.innerHTML = "";
             withdrawalsList.forEach(w => {
@@ -495,17 +529,18 @@
             const container = document.getElementById("analytics-months-container");
             if(!container) return;
 
-            let mayCount = masterData.filter(p => p.date.startsWith("2026-05")).length;
-            let mayDelivered = masterData.filter(p => p.date.startsWith("2026-05") && p.status === "Delivered");
-            let mayRev = mayDelivered.reduce((a, b) => a + b.amount, 0);
-            let mayPct = mayCount > 0 ? Math.round((mayDelivered.length / mayCount) * 100) : 0;
+            let currentMonthName = selectedRandomMonth === "05" ? "May" : "June";
+            let activeCount = masterData.filter(p => p.date.includes(`-${selectedRandomMonth}-`)).length;
+            let activeDelivered = masterData.filter(p => p.date.includes(`-${selectedRandomMonth}-`) && p.status === "Delivered");
+            let activeRev = activeDelivered.reduce((a, b) => a + b.amount, 0);
+            let activePct = activeCount > 0 ? Math.round((activeDelivered.length / activeCount) * 100) : 0;
 
             const monthsMap = [
                 { title: "January Peak Report", load: "0 items", rev: "LKR 0", pct: "0%" },
                 { title: "February Volume Core", load: "0 items", rev: "LKR 0", pct: "0%" },
                 { title: "March Main Season", load: "0 items", rev: "LKR 0", pct: "0%" },
                 { title: "April Festivity Load", load: "0 items", rev: "LKR 0", pct: "0%" },
-                { title: "May Operational Track", load: `${mayCount} items`, rev: `LKR ${mayRev.toLocaleString()}`, pct: `${mayPct}%` }
+                { title: `${currentMonthName} Operational Track`, load: `${activeCount} items`, rev: `LKR ${activeRev.toLocaleString()}`, pct: `${activePct}%` }
             ];
 
             container.innerHTML = "";
@@ -537,13 +572,12 @@
             document.getElementById("tab-" + tabId).classList.remove("hidden");
             document.getElementById("nav-" + tabId).className = "w-full flex items-center py-2.5 px-4 rounded bg-indigo-700 text-white font-medium text-left transition";
             
-            // Auto close mobile menu after selection
             if(window.innerWidth < 768) {
                 document.getElementById("sidebar-menu").classList.add("hidden");
             }
 
             if (tabId === 'dashboard') {
-                document.getElementById("header-title").innerText = "Ayesha's userdashboard";
+                document.getElementById("header-title").innerText = `${currentOwnerName}'s userdashboard`;
             } else {
                 const titles = { parcels: "Master Fleet Parcels Log", withdrawals: "Financial Disbursals Hub", analytics: "Month-by-Month Analytics Report", settings: "System Configuration & Profiles" };
                 document.getElementById("header-title").innerText = titles[tabId];
