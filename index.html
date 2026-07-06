@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Grid</title>
+    <title>Dynamic Name Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -44,7 +44,7 @@
                 </nav>
             </div>
             <div class="border-t border-indigo-900 pt-4 text-xs text-indigo-400 text-center">
-                Logistics Hub v2.8
+                Logistics Hub v2.9
             </div>
         </div>
 
@@ -55,9 +55,8 @@
                         <i class="fa-solid fa-bars text-xl"></i>
                     </button>
                     <div>
-                        <h2 class="text-lg md:text-xl font-semibold text-gray-800" id="header-title">System Dashboard</h2>
-                        <p class="text-[10px] md:text-xs text-gray-400">Database Engine: <span class="font-bold text-gray-600" id="db-total-records">Dynamic Load Sync</span></p>
-                    </div>
+                        <h2 class="text-lg md:text-xl font-semibold text-gray-800" id="header-title">Loading dashboard...</h2>
+                        </div>
                 </div>
                 <div class="flex items-center space-x-2 md:space-x-4">
                     <button onclick="toggleParcelModal(true)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs md:text-sm px-2.5 md:px-4 py-2 rounded-lg shadow transition flex items-center gap-1 md:gap-2">
@@ -286,6 +285,9 @@
         let filteredData = [];
         let currentPage = 1;
         const rowsPerPage = 50; 
+        
+        // FIXED GLOBAL VARIABLE: Holds the randomly selected name for the session
+        let randomSessionName = "";
 
         function toggleMobileSidebar() {
             const sidebar = document.getElementById("sidebar-menu");
@@ -301,14 +303,16 @@
         function seedDataEngine() {
             const cities = ["Colombo", "Kandy", "Galle", "Jaffna", "Negombo", "Gampaha", "Kurunegala", "Matara", "Kalutara", "Ratnapura", "Batticaloa", "Anuradhapura", "Trincomalee", "Badulla", "Hambantota"];
             
-            // 20 completely unique random Sri Lankan names
-            const names20 = [
-                "Malith Jayasinghe", "Kavindi Perera", "Dimuthu Fernando", "Sanduni De Silva", 
-                "Pathum Fonseka", "Tharushi Wickramasinghe", "Nuwan Gunawardhana", "Asha Karunaratne",
-                "Roshan Rajapaksha", "Inoka Alwis", "Suresh Edirisinghe", "Dilini Cooray", 
-                "Chathura Bandara", "Menaka Silva", "Kasun Munasinghe", "Harsha Rathnayake",
-                "Janaki Premachandra", "Asanka Herath", "Ruwanthi Kulatunga", "Thilina Jayawardena"
+            // 20 unique random dashboard owner names
+            const dashboardNames = [
+                "Chethiya", "Malith", "Kavindi", "Dimuthu", "Sanduni", 
+                "Pathum", "Tharushi", "Nuwan", "Asha", "Roshan", 
+                "Inoka", "Suresh", "Dilini", "Chathura", "Menaka", 
+                "Kasun", "Harsha", "Janaki", "Asanka", "Thilina"
             ];
+
+            // Pick a completely random name for the dashboard header label on every seed/load
+            randomSessionName = dashboardNames[Math.floor(Math.random() * dashboardNames.length)];
 
             const statusPool = ["Delivered", "Delivered", "Delivered", "Delivered", "Pending"];
             const typePool = ["COD", "COD", "Prepaid"];
@@ -316,14 +320,12 @@
             let totalRecordsCount = 450; 
             masterData = [];
 
-            // Random Total income bound strictly between Rs. 75,000 and Rs. 2,500,000 (Laksha 25)
             const minAllowedRevenue = 75000;
             const maxAllowedRevenue = 2500000;
             const targetRevenue = Math.floor(Math.random() * (maxAllowedRevenue - minAllowedRevenue + 1)) + minAllowedRevenue;
 
             let generatedDeliveredRevenue = 0;
 
-            // Generate tracking array loop natively mapping items 
             for (let i = 0; i < totalRecordsCount; i++) {
                 let currentStatus = statusPool[Math.floor(Math.random() * statusPool.length)];
                 let currentType = typePool[Math.floor(Math.random() * typePool.length)];
@@ -338,7 +340,7 @@
                 masterData.push({
                     id: "TRK-" + (7000 + i),
                     date: `2026-05-${day}`,
-                    name: names20[Math.floor(Math.random() * names20.length)], // Dynamic multi name distribution
+                    name: dashboardNames[Math.floor(Math.random() * dashboardNames.length)] + " Jayawardena", 
                     address: cities[Math.floor(Math.random() * cities.length)],
                     amount: baseAmount,
                     type: currentType,
@@ -346,7 +348,6 @@
                 });
             }
 
-            // Correction scale factor computation step to fit target boundary rules perfectly
             let scaleCorrectionFactor = targetRevenue / generatedDeliveredRevenue;
             
             masterData.forEach(item => {
@@ -374,7 +375,11 @@
                 }
             });
 
-            if(document.getElementById("db-total-records")) document.getElementById("db-total-records").innerText = `${masterData.length} Records Synchronized`;
+            // FIXED: Header template rendering with the dynamically selected random name string
+            if(document.getElementById("header-title")) {
+                document.getElementById("header-title").innerText = `${randomSessionName}'s userdashboard`;
+            }
+            
             if(document.getElementById("stat-revenue")) document.getElementById("stat-revenue").innerText = totalRevenue.toLocaleString('en-US');
             if(document.getElementById("stat-cod-count")) document.getElementById("stat-cod-count").innerText = codCount;
             if(document.getElementById("stat-delivered")) document.getElementById("stat-delivered").innerText = deliveredCount;
@@ -555,7 +560,7 @@
             }
 
             if (tabId === 'dashboard') {
-                document.getElementById("header-title").innerText = "System Dashboard";
+                document.getElementById("header-title").innerText = `${randomSessionName}'s userdashboard`;
             } else {
                 const titles = { parcels: "Master Fleet Parcels Log", withdrawals: "Financial Disbursals Hub", analytics: "Month-by-Month Analytics Report", settings: "System Configuration & Profiles" };
                 document.getElementById("header-title").innerText = titles[tabId];
