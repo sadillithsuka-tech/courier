@@ -44,7 +44,7 @@
                 </nav>
             </div>
             <div class="border-t border-indigo-900 pt-4 text-xs text-indigo-400 text-center">
-                Logistics Hub v2.9
+                Logistics Hub v3.2
             </div>
         </div>
 
@@ -56,7 +56,7 @@
                     </button>
                     <div>
                         <h2 class="text-lg md:text-xl font-semibold text-gray-800" id="header-title">Loading dashboard...</h2>
-                        </div>
+                    </div>
                 </div>
                 <div class="flex items-center space-x-2 md:space-x-4">
                     <button onclick="toggleParcelModal(true)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs md:text-sm px-2.5 md:px-4 py-2 rounded-lg shadow transition flex items-center gap-1 md:gap-2">
@@ -72,7 +72,7 @@
                     <div class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
                         <div>
                             <p class="text-xs md:text-sm font-medium text-gray-500">Delivered Revenue</p>
-                            <h3 class="text-xl md:text-2xl font-bold text-emerald-600 mt-1">LKR <span id="stat-revenue">0.00</span></h3>
+                            <h3 class="text-xl md:text-2xl font-bold text-emerald-600 mt-1">LKR <span id="stat-revenue">0</span></h3>
                         </div>
                         <div class="p-2.5 md:p-3 rounded-full bg-emerald-100 text-emerald-600"><i class="fa-solid fa-sack-dollar text-lg md:text-xl"></i></div>
                     </div>
@@ -262,7 +262,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Locked Amount (LKR)</label>
-                        <input type="number" id="p-amount" required min="100" class="w-full p-2.5 border rounded text-xs bg-gray-50 outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-gray-700" value="3500">
+                        <input type="number" id="p-amount" required min="100" step="5" class="w-full p-2.5 border rounded text-xs bg-gray-50 outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-gray-700" value="3500">
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Payment Method</label>
@@ -286,7 +286,6 @@
         let currentPage = 1;
         const rowsPerPage = 50; 
         
-        // FIXED GLOBAL VARIABLE: Holds the randomly selected name for the session
         let randomSessionName = "";
 
         function toggleMobileSidebar() {
@@ -300,10 +299,19 @@
             }
         }
 
+        // Helper function to create randomized tracking identifiers
+        function generateRealisticTrackingId() {
+            const prefixes = ["DEX", "NEX", "HEX", "LEX", "CEX", "STX"];
+            const suffixes = ["LK", "SL", "COL", "CMB"];
+            const randomPrefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+            const randomSuffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+            const uniqueNum = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
+            return `${randomPrefix}-${uniqueNum}-${randomSuffix}`;
+        }
+
         function seedDataEngine() {
             const cities = ["Colombo", "Kandy", "Galle", "Jaffna", "Negombo", "Gampaha", "Kurunegala", "Matara", "Kalutara", "Ratnapura", "Batticaloa", "Anuradhapura", "Trincomalee", "Badulla", "Hambantota"];
             
-            // 20 unique random dashboard owner names
             const dashboardNames = [
                 "Chethiya", "Malith", "Kavindi", "Dimuthu", "Sanduni", 
                 "Pathum", "Tharushi", "Nuwan", "Asha", "Roshan", 
@@ -311,7 +319,6 @@
                 "Kasun", "Harsha", "Janaki", "Asanka", "Thilina"
             ];
 
-            // Pick a completely random name for the dashboard header label on every seed/load
             randomSessionName = dashboardNames[Math.floor(Math.random() * dashboardNames.length)];
 
             const statusPool = ["Delivered", "Delivered", "Delivered", "Delivered", "Pending"];
@@ -322,24 +329,36 @@
 
             const minAllowedRevenue = 75000;
             const maxAllowedRevenue = 2500000;
-            const targetRevenue = Math.floor(Math.random() * (maxAllowedRevenue - minAllowedRevenue + 1)) + minAllowedRevenue;
+            let targetRevenue = Math.floor(Math.random() * (maxAllowedRevenue - minAllowedRevenue + 1)) + minAllowedRevenue;
+            targetRevenue = Math.round(targetRevenue / 5) * 5;
 
             let generatedDeliveredRevenue = 0;
 
             for (let i = 0; i < totalRecordsCount; i++) {
                 let currentStatus = statusPool[Math.floor(Math.random() * statusPool.length)];
                 let currentType = typePool[Math.floor(Math.random() * typePool.length)];
-                let baseAmount = Math.floor(Math.random() * (6500 - 1500 + 1)) + 1500; 
+                
+                let baseAmount = Math.floor(Math.random() * (1300 - 300 + 1)) + 300; 
+                baseAmount = baseAmount * 5; 
 
                 if (currentStatus === "Delivered") {
                     generatedDeliveredRevenue += baseAmount;
                 }
 
-                let day = String(Math.floor(Math.random() * 31) + 1).padStart(2, '0');
+                // FIXED: Enforce accurate June 1st to July 7th, 2026 distribution window bounds
+                let isJuly = Math.random() < 0.20; // 20% weights distributed inside July
+                let computedDate = "";
+                if (isJuly) {
+                    let day = String(Math.floor(Math.random() * 7) + 1).padStart(2, '0'); // July 01 to July 07
+                    computedDate = `2026-07-${day}`;
+                } else {
+                    let day = String(Math.floor(Math.random() * 30) + 1).padStart(2, '0'); // June 01 to June 30
+                    computedDate = `2026-06-${day}`;
+                }
 
                 masterData.push({
-                    id: "TRK-" + (7000 + i),
-                    date: `2026-05-${day}`,
+                    id: generateRealisticTrackingId(), // FIXED: Uses realistic dynamic structure
+                    date: computedDate,
                     name: dashboardNames[Math.floor(Math.random() * dashboardNames.length)] + " Jayawardena", 
                     address: cities[Math.floor(Math.random() * cities.length)],
                     amount: baseAmount,
@@ -351,10 +370,15 @@
             let scaleCorrectionFactor = targetRevenue / generatedDeliveredRevenue;
             
             masterData.forEach(item => {
-                let adjustedVal = Math.round(item.amount * scaleCorrectionFactor);
-                if(adjustedVal < 500) adjustedVal = Math.floor(Math.random() * 1200) + 700;
+                let adjustedVal = Math.round((item.amount * scaleCorrectionFactor) / 5) * 5;
+                if(adjustedVal < 500) {
+                    adjustedVal = (Math.floor(Math.random() * 240) + 140) * 5; 
+                }
                 item.amount = adjustedVal;
             });
+
+            // Sort data chronologically to align logically from June 1 down to July 7
+            masterData.sort((a, b) => new Date(a.date) - new Date(b.date));
 
             filteredData = [...masterData];
         }
@@ -375,7 +399,6 @@
                 }
             });
 
-            // FIXED: Header template rendering with the dynamically selected random name string
             if(document.getElementById("header-title")) {
                 document.getElementById("header-title").innerText = `${randomSessionName}'s userdashboard`;
             }
@@ -475,12 +498,13 @@
             let amount = parseInt(document.getElementById("p-amount").value);
             let type = document.getElementById("p-type").value;
             
+            amount = Math.round(amount / 5) * 5;
+
             let today = new Date();
             let dateStr = today.toISOString().split('T')[0];
-            let nextId = "TRK-" + (7000 + masterData.length);
             
             masterData.push({
-                id: nextId,
+                id: generateRealisticTrackingId(),
                 date: dateStr,
                 name: name,
                 address: city,
@@ -499,13 +523,13 @@
             const withdrawalBody = document.getElementById("withdrawal-table-body");
             if (!withdrawalBody) return;
             const withdrawalsList = [
-                { id: "WTH-9081", date: "2026-05-20", bank: "BOC - Acc *8821", amount: 450000 },
-                { id: "WTH-9082", date: "2026-05-15", bank: "Commercial Bank - Acc *4401", amount: 380000 },
-                { id: "WTH-9083", date: "2026-05-01", bank: "Sampath Bank - Acc *0194", amount: 80000 }
+                { id: "WTH-9081", date: "2026-07-02", bank: "BOC - Acc *8821", amount: 450000 },
+                { id: "WTH-9082", date: "2026-06-25", bank: "Commercial Bank - Acc *4401", amount: 380000 },
+                { id: "WTH-9083", date: "2026-06-10", bank: "Sampath Bank - Acc *0194", amount: 80000 }
             ];
             withdrawalBody.innerHTML = "";
             withdrawalsList.forEach(w => {
-                withdrawalBody.innerHTML += `<tr><td class="p-4 font-semibold text-indigo-600">${w.id}</td><td class="p-4 text-gray-500">${w.date}</td><td class="p-4 font-medium text-gray-800">${w.bank}</td><td class="p-4 font-bold text-gray-900">LKR ${w.amount.toLocaleString()}.00</td><td class="p-4"><span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold">Success</span></td></tr>`;
+                withdrawalBody.innerHTML += `<tr><td class="p-4 font-semibold text-indigo-600">${w.id}</td><td class="p-4 text-gray-500">${w.date}</td><td class="p-4 font-medium text-gray-800">${w.bank}</td><td class="p-4 font-bold text-gray-900">LKR ${w.amount.toLocaleString()}</td><td class="p-4"><span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold">Success</span></td></tr>`;
             });
         }
 
@@ -513,24 +537,30 @@
             const container = document.getElementById("analytics-months-container");
             if(!container) return;
 
-            let mayCount = masterData.filter(p => p.date.startsWith("2026-05")).length;
-            let mayDelivered = masterData.filter(p => p.date.startsWith("2026-05") && p.status === "Delivered");
-            let mayRev = mayDelivered.reduce((a, b) => a + b.amount, 0);
-            let mayPct = mayCount > 0 ? Math.round((mayDelivered.length / mayCount) * 100) : 0;
+            // Compute June Stats Dynamics
+            let juneItems = masterData.filter(p => p.date.startsWith("2026-06"));
+            let juneCount = juneItems.length;
+            let juneDelivered = juneItems.filter(p => p.status === "Delivered");
+            let juneRev = juneDelivered.reduce((a, b) => a + b.amount, 0);
+            let junePct = juneCount > 0 ? Math.round((juneDelivered.length / juneCount) * 100) : 0;
+
+            // Compute July Stats Dynamics
+            let julyItems = masterData.filter(p => p.date.startsWith("2026-07"));
+            let julyCount = julyItems.length;
+            let julyDelivered = julyItems.filter(p => p.status === "Delivered");
+            let julyRev = julyDelivered.reduce((a, b) => a + b.amount, 0);
+            let julyPct = julyCount > 0 ? Math.round((julyDelivered.length / julyCount) * 100) : 0;
 
             const monthsMap = [
-                { title: "January Peak Report", load: "0 items", rev: "LKR 0", pct: "0%" },
-                { title: "February Volume Core", load: "0 items", rev: "LKR 0", pct: "0%" },
-                { title: "March Main Season", load: "0 items", rev: "LKR 0", pct: "0%" },
-                { title: "April Festivity Load", load: "0 items", rev: "LKR 0", pct: "0%" },
-                { title: "May Operational Track", load: `${mayCount} items`, rev: `LKR ${mayRev.toLocaleString()}`, pct: `${mayPct}%` }
+                { title: "June Operational Fleet", load: `${juneCount} items`, rev: `LKR ${juneRev.toLocaleString()}`, pct: `${junePct}%` },
+                { title: "July Mid-Month Log", load: `${julyCount} items`, rev: `LKR ${julyRev.toLocaleString()}`, pct: `${julyPct}%` }
             ];
 
             container.innerHTML = "";
             monthsMap.forEach(m => {
                 container.innerHTML += `
                     <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 space-y-4">
-                        <div class="flex justify-between items-center"><h4 class="font-bold text-gray-800 text-sm">${m.title}</h4><span class="text-[10px] bg-indigo-50 text-indigo-600 font-bold px-2 py-0.5 rounded">2026 Model</span></div>
+                        <div class="flex justify-between items-center"><h4 class="font-bold text-gray-800 text-sm">${m.title}</h4><span class="text-[10px] bg-indigo-50 text-indigo-600 font-bold px-2 py-0.5 rounded">2026 Active</span></div>
                         <div class="grid grid-cols-2 gap-4 text-xs">
                             <div><p class="text-[11px] text-gray-400">Total Month Load</p><p class="font-semibold text-gray-700 mt-0.5">${m.load}</p></div>
                             <div><p class="text-[11px] text-gray-400">Volume Revenue</p><p class="font-semibold text-emerald-600 mt-0.5">${m.rev}</p></div>
